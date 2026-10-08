@@ -4,11 +4,12 @@
   "description": "Telegram OTP Bot for Portfolio",
   "main": "index.js",
   "scripts": {
-    "start": "node index.js"
+    "start": "node index.js",
+    "seed:files": "node scripts/seed-files.mjs"
   },
   "dependencies": {
+    "convex": "^1.46.0",
     "express": "^4.19.2",
-    "firebase-admin": "^12.7.0",
     "telegraf": "^4.16.3"
   },
   "engines": {
