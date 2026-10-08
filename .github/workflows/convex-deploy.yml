@@ -28,9 +28,3 @@ jobs:
         run: npx convex deploy
         env:
           CONVEX_DEPLOY_KEY: ${{ secrets.CONVEX_DEPLOY_KEY }}
-
-      - name: Seed the gated zips
-        run: node scripts/seed-files.mjs
-        env:
-          CONVEX_URL: ${{ secrets.CONVEX_URL }}
-          BOT_SECRET: ${{ secrets.BOT_SECRET }}
