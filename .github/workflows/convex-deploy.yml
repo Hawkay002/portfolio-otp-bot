@@ -1,0 +1,36 @@
+name: Convex deploy
+
+on:
+  # Every push to main deploys the Convex schema + functions and re-seeds
+  # the gated zips, so the bot and its backend always ship together.
+  push:
+    branches: [main]
+  workflow_dispatch:
+
+concurrency:
+  group: convex-${{ github.ref }}
+  cancel-in-progress: false
+
+jobs:
+  deploy:
+    runs-on: ubuntu-latest
+    steps:
+      - uses: actions/checkout@v4
+
+      - uses: actions/setup-node@v4
+        with:
+          node-version: 20
+          cache: npm
+
+      - run: npm ci
+
+      - name: Deploy Convex schema + functions
+        run: npx convex deploy
+        env:
+          CONVEX_DEPLOY_KEY: ${{ secrets.CONVEX_DEPLOY_KEY }}
+
+      - name: Seed the gated zips
+        run: node scripts/seed-files.mjs
+        env:
+          CONVEX_URL: ${{ secrets.CONVEX_URL }}
+          BOT_SECRET: ${{ secrets.BOT_SECRET }}
