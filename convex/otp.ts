@@ -74,7 +74,7 @@ export const issueOtp = mutation({
       .unique()
 
     const record = {
-      sessionId: args.sessionId,
+      sessionId,
       otp,
       telegramId: args.telegramId,
       telegramName: args.name,
@@ -155,5 +155,27 @@ export const verify = mutation({
     await ctx.db.delete(session._id)
 
     return { ok: true, downloadUrl, fileName: file.fileName }
+  },
+})
+
+// Temporary diagnostics: live state of the verification flow.
+export const debugState = query({
+  args: {},
+  handler: async (ctx) => {
+    const pending = await ctx.db.query("pendingVerifications").collect()
+    const sessions = await ctx.db.query("otpSessions").collect()
+    return {
+      pendingCount: pending.length,
+      pending: pending.map((p) => ({
+        telegramId: p.telegramId,
+        sessionId: p.sessionId,
+      })),
+      sessionCount: sessions.length,
+      sessions: sessions.map((s) => ({
+        sessionId: s.sessionId,
+        attempts: s.attempts,
+        verified: s.verified,
+      })),
+    }
   },
 })
