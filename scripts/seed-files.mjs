@@ -17,18 +17,19 @@ if (!CONVEX_URL || !BOT_SECRET) {
   process.exit(1)
 }
 
+// The gated zips live in the repo under gated/ so CI can seed them.
 const FILES = [
   {
     file: "ransomware",
     fileName: "Ransomware-main.zip",
     contentType: "application/zip",
-    source: "../React-portfolio/public/downloads/Ransomware-main.zip",
+    source: "../gated/Ransomware-main.zip",
   },
   {
     file: "unredactor",
     fileName: "unredactor.py-main.zip",
     contentType: "application/zip",
-    source: "../React-portfolio/public/downloads/unredactor.py-main.zip",
+    source: "../gated/unredactor.py-main.zip",
   },
 ]
 
