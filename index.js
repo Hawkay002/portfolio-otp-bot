@@ -1,7 +1,13 @@
 const { Telegraf, Markup } = require('telegraf');
 const { ConvexHttpClient } = require('convex/browser');
 const express = require('express');
+const fs = require('fs');
 const path = require('path');
+
+// The OTP card widget (Bot API 10.4 sendWidget). A widget's HTML is fixed for
+// its lifetime, so it is read once at boot and the code itself travels in
+// chat_data - the card never shows the code until the user taps it.
+const WIDGET_HTML = fs.readFileSync(path.join(__dirname, 'widgets', 'otp-card.html'), 'utf8');
 
 // --- 1. CONFIGURATION ---
 const BOT_TOKEN = process.env.BOT_TOKEN;
@@ -326,10 +332,32 @@ bot.on('contact', async (ctx) => {
       );
     }
 
-    await ctx.reply(`✅ *Verification Successful*\n\nYour code is:\n\`${result.otp}\`\n\n(Tap to copy)`, {
-      parse_mode: 'Markdown',
-      ...Markup.removeKeyboard(),
-    });
+    // The widget carries the code in its chat_data; the caption doubles as the
+    // fallback for apps that don't support widgets yet.
+    let cardSent = false;
+    try {
+      await ctx.telegram.callApi('sendWidget', {
+        chat_id: ctx.chat.id,
+        html: WIDGET_HTML,
+        chat_data: JSON.stringify({ c: result.otp }),
+        caption: '🔐 Your verification code is hidden in the card above — tap it to reveal and copy. (Requires an updated Telegram app.)',
+      });
+      cardSent = true;
+    } catch (error) {
+      console.error('⚠️ sendWidget failed, falling back to text OTP:', error.message);
+    }
+
+    if (cardSent) {
+      await ctx.reply('✅ *Verification Successful*\n\nTap the card above to reveal your code, then enter it on the website.', {
+        parse_mode: 'Markdown',
+        ...Markup.removeKeyboard(),
+      });
+    } else {
+      await ctx.reply(`✅ *Verification Successful*\n\nYour code is:\n\`${result.otp}\`\n\n(Tap to copy)`, {
+        parse_mode: 'Markdown',
+        ...Markup.removeKeyboard(),
+      });
+    }
   } catch (error) {
     console.error('❌ Contact Error:', error.message);
     ctx.reply('⚠️ Error processing contact.');

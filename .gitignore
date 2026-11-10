@@ -1,5 +1,8 @@
 node_modules
 .env
+.env.local
 serviceAccountKey.json
 firebase-key.json
 .DS_Store
+# The gated downloads live in Convex storage; never ship them from the repo.
+gated/
