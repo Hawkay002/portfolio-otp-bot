@@ -1,0 +1,19 @@
+<style>
+.card{display:block;width:100%;box-sizing:border-box;position:relative;border:1px solid #27272a;border-radius:16px;background:#18181b;color:#fafafa;padding:18px 12px 16px;text-align:center;animation:cardIn .35s ease-out both}
+@keyframes cardIn{from{opacity:0;transform:scale(.97)}}
+.mark{position:absolute;top:9px;left:9px;height:15px;width:auto;fill:#fafafa}
+.t{font-size:15px;font-weight:700;letter-spacing:-.01em;color:#fafafa}
+.s{font-size:11px;color:#a1a1aa;margin:0 0 14px}
+.row{display:flex;gap:10px;justify-content:center}
+.btn{flex:1;max-width:150px;display:inline-block;box-sizing:border-box;padding:9px 12px;border:1px solid #27272a;border-radius:12px;background:#09090b;color:#fafafa;text-decoration:none;font-size:13px;font-weight:600}
+.btn:hover{border-color:#3f3f46}
+@media (prefers-reduced-motion:reduce){.card{animation:none}}
+</style>
+<div class="card"><svg class="mark" id="m" viewBox="100.6 100.6 523.8 291.8" aria-hidden="1"></svg><span class="t">Contact Admin</span><p class="s">Reach Shovith on these platforms</p><div class="row"><a class="btn" href="https://wa.me/918777845713">WhatsApp</a><a class="btn" href="https://t.me/X_o_x_o_002">Telegram</a></div></div>
+<script>
+var B='.XXX.XXX. X....X..X XXXX.X..X ...X.X..X XXX..XXX.'.split(' ');
+for(var r=0,cells=[],m=document.getElementById('m');r<5;r++)for(var col=0;col<9;col++)if(B[r][col]==='X'){var e=document.createElementNS('http://www.w3.org/2000/svg','rect');e.setAttribute('x',100.6+col*58);e.setAttribute('y',100.6+r*58);e.setAttribute('width',59.8);e.setAttribute('height',59.8);e.setAttribute('rx',10.5);cells.push(e)}
+var i=0,ph=0,wait=0;
+if(matchMedia('(prefers-reduced-motion: reduce)').matches){for(var k=0;k<cells.length;k++)m.appendChild(cells[k])}
+else var asm=setInterval(function(){if(ph===0){m.appendChild(cells[i++]);if(i>=cells.length){ph=1;wait=250}}else if(ph===1){if(--wait<=0){ph=2;i=0}}else if(ph===2){m.removeChild(cells[i++]);if(i>=cells.length){ph=3;wait=50}}else{if(--wait<=0){ph=0;i=0}}},16);
+</script>

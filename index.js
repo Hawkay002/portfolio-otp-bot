@@ -8,6 +8,8 @@ const path = require('path');
 // its lifetime, so it is read once at boot and the code itself travels in
 // chat_data - the card never shows the code until the user taps it.
 const WIDGET_HTML = fs.readFileSync(path.join(__dirname, 'widgets', 'otp-card.html'), 'utf8');
+const SOCIALS_HTML = fs.readFileSync(path.join(__dirname, 'widgets', 'socials-card.html'), 'utf8');
+const INFO_HTML = fs.readFileSync(path.join(__dirname, 'widgets', 'info-card.html'), 'utf8');
 
 // --- 1. CONFIGURATION ---
 const BOT_TOKEN = process.env.BOT_TOKEN;
@@ -364,19 +366,43 @@ bot.on('contact', async (ctx) => {
 });
 
 // --- ADMIN SOCIALS & INFO ---
-bot.command('admin_socials', (ctx) => {
-  ctx.reply('📞 *Contact Admin* via these social media platforms.', {
-    parse_mode: 'Markdown',
-    ...Markup.inlineKeyboard([
-      [Markup.button.url('WhatsApp', 'https://wa.me/918777845713')],
-      [Markup.button.url('Telegram', 'https://t.me/X_o_x_o_002')],
-    ]),
-  });
+bot.command('admin_socials', async (ctx) => {
+  try {
+    await ctx.telegram.callApi('sendWidget', {
+      chat_id: ctx.chat.id,
+      html: SOCIALS_HTML,
+    });
+  } catch (error) {
+    console.error('⚠️ socials widget failed, falling back:', error.message);
+    ctx.reply('📞 *Contact Admin* via these social media platforms.', {
+      parse_mode: 'Markdown',
+      ...Markup.inlineKeyboard([
+        [Markup.button.url('WhatsApp', 'https://wa.me/918777845713')],
+        [Markup.button.url('Telegram', 'https://t.me/X_o_x_o_002')],
+      ]),
+    });
+  }
 });
 
 bot.command('info', async (ctx) => {
   try {
     const botInfo = await ctx.telegram.getMe();
+    try {
+      await ctx.telegram.callApi('sendWidget', {
+        chat_id: ctx.chat.id,
+        html: INFO_HTML,
+        chat_data: JSON.stringify({
+          n: botInfo.first_name,
+          un: botInfo.username,
+          id: botInfo.id,
+          u: getUptime(),
+        }),
+      });
+      return;
+    } catch (we) {
+      console.error('⚠️ info widget failed, falling back to photo:', we.message);
+    }
+
     const photos = await ctx.telegram.getUserProfilePhotos(botInfo.id, 0, 1);
     let photoSource = (photos.total_count > 0) ? photos.photos[0][photos.photos[0].length - 1].file_id : 'https://raw.githubusercontent.com/Hawkay002/my-portfolio-bot/main/IMG_20260131_132820_711.jpg';
 
