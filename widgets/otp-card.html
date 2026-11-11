@@ -1,42 +1,25 @@
 <style>
-.card{display:block;width:100%;box-sizing:border-box;border-radius:16px;background:#fff;border:1px solid rgba(0,0,0,.08);box-shadow:0 1px 2px rgba(0,0,0,.06);padding:16px 14px 13px;text-align:center;color:#1d1d1f;font-family:system-ui,sans-serif;cursor:pointer;color-scheme:light}
-.mark{display:grid;grid-template-columns:repeat(9,5px);grid-auto-rows:5px;gap:1px;justify-content:center;margin-bottom:9px}
-.mark div{border-radius:1.5px}
-.mark div.on{background:#1d1d1f}
-.label{font-size:10.5px;font-weight:700;letter-spacing:.14em;text-transform:uppercase}
-.site{font-size:11px;color:#71717a;margin:1px 0 12px}
-.row{position:relative;height:40px}
-.cell{position:absolute;top:3px;left:calc(50% - 12px + (var(--i) - 2.5)*30px);width:24px;height:34px;box-sizing:border-box;border-radius:7px;background:#f4f4f5;border:1px solid #e4e4e7;color:#a1a1aa;font-size:15px;line-height:32px;text-align:center;transition:transform .34s cubic-bezier(.5,0,.75,0),opacity .18s .16s}
-.fusing .cell{transform:translateX(calc((2.5 - var(--i))*30px));opacity:0}
-.cap{position:absolute;left:50%;top:0;transform:translateX(-50%) scale(0);padding:8px 16px;border-radius:12px;background:#f4f4f5;border:1px solid #e4e4e7;transition:transform .3s .18s cubic-bezier(.2,.9,.3,1.2),border-color .25s}
-.fusing .cap{transform:translateX(-50%) scale(1)}
-.ok .cap{border-color:#3b82f6}
-.digits{font-family:ui-monospace,monospace;font-size:20px;font-variant-numeric:tabular-nums;letter-spacing:3px;user-select:text;-webkit-user-select:text}
-.hint{font-size:11px;color:#71717a;margin-top:10px}
-.hint .ck{display:inline-block;vertical-align:-2px;margin-right:3px;color:#3b82f6}
+.hd{display:flex;align-items:center;justify-content:center;gap:8px;margin:2px 0 5px}
+.mark{display:grid;grid-template-columns:repeat(9,3px);grid-auto-rows:3px;gap:1px;flex:none}
+.mark div{border-radius:1px}
+.mark div.on{background:var(--tg-theme-text-color)}
+.t{font-size:15px;font-weight:700;color:var(--tg-theme-text-color)}
+.s{font-size:12px;color:var(--tg-theme-hint-color);margin:0 0 10px}
+.card{display:block;width:100%;box-sizing:border-box;border:none;border-radius:14px;background:var(--tg-theme-secondary-bg-color);color:var(--tg-theme-text-color);padding:16px 12px;text-align:center;cursor:pointer}
+.code{display:block;font-family:ui-monospace,monospace;font-size:25px;letter-spacing:7px;font-variant-numeric:tabular-nums;user-select:text;-webkit-user-select:text;transition:opacity .15s}
+.mask{color:var(--tg-theme-hint-color)}
+.hint{display:block;font-size:11px;color:var(--tg-theme-hint-color);margin-top:9px}
 </style>
-<button class="card" id="b" aria-label="Reveal and copy your verification code">
-  <div class="mark" id="m"></div>
-  <div class="label">Security Verification</div>
-  <div class="site">shovith.runs-on.dev</div>
-  <div class="row">
-    <div class="cell" style="--i:0">&bull;</div><div class="cell" style="--i:1">&bull;</div><div class="cell" style="--i:2">&bull;</div><div class="cell" style="--i:3">&bull;</div><div class="cell" style="--i:4">&bull;</div><div class="cell" style="--i:5">&bull;</div>
-    <div class="cap"><span class="digits" id="d"></span></div>
-  </div>
-  <div class="hint" id="h">Tap to reveal &amp; copy</div>
-</button>
+<button class="card" id="b" aria-label="Reveal and copy your code"><span class="mark" id="m"></span><span class="t">Security Verification</span><p class="s">shovith.runs-on.dev · secured download</p><span class="code mask" id="c">&bull;&bull;&bull;&nbsp;&bull;&bull;&bull;</span><span class="hint" id="h">Tap to reveal &amp; copy</span></button>
 <script>
 var W=window.TelegramWidget||{copyText:function(t){console.log(t)},HapticFeedback:{notificationOccurred:function(){}}};
 var code=null;try{code=JSON.parse(W.chatData).c}catch(e){}
-var B='.XXX.XXX. X...X...X XXXX.X..X ...X.X..X XXX...XX.'.split(' ');
+var B='.XXX.XXX. X...X...X XXXX.X..X ...X.X..X XXX..XXX.'.split(' ');
 for(var r=0,h='';r<5;r++)for(var c=0;c<9;c++)h+='<div class="'+(B[r][c]==='X'?'on':'')+'"></div>';
 document.getElementById('m').innerHTML=h;
-var b=document.getElementById('b'),d=document.getElementById('d'),h2=document.getElementById('h'),done=0;
+var b=document.getElementById('b'),c=document.getElementById('c'),h2=document.getElementById('h');
 if(!code){h2.textContent='Code unavailable — restart verification on the website'}
-b.addEventListener('click',function(){if(!code||done)return;done=1;
-b.classList.add('fusing');
-d.textContent=code.slice(0,3)+' '+code.slice(3);
-setTimeout(function(){b.classList.add('ok')},420);
-W.copyText(code);W.HapticFeedback.notificationOccurred('success');
-h2.innerHTML='<svg class="ck" width="12" height="12" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="3" stroke-linecap="round" stroke-linejoin="round" aria-hidden="1"><path d="M20 6 9 17l-5-5"/></svg>Copied — enter it on the website'});
+b.addEventListener('click',function(){if(!code)return;
+if(c.className==='code mask'){c.textContent=code;c.className='code'}
+W.copyText(code);W.HapticFeedback.notificationOccurred('success');h2.textContent='Copied — enter it on the website'});
 </script>
