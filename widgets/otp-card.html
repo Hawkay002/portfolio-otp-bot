@@ -1,9 +1,7 @@
 <style>
 .card{display:block;width:100%;box-sizing:border-box;border:none;border-radius:16px;background:var(--tg-theme-secondary-bg-color);color:var(--tg-theme-text-color);padding:18px 12px 14px;text-align:center;cursor:pointer;box-shadow:0 1px 3px rgba(0,0,0,.12)}
-.hd{display:flex;align-items:center;justify-content:center;gap:8px;margin:2px 0 6px}
-.mark{display:grid;grid-template-columns:repeat(9,3px);grid-auto-rows:3px;gap:1px;flex:none}
-.mark div{border-radius:1px}
-.mark div.on{background:var(--tg-theme-text-color)}
+.hd{display:flex;align-items:center;justify-content:center;gap:9px;margin:2px 0 6px}
+.mark{height:17px;width:auto;flex:none;fill:var(--tg-theme-text-color)}
 .t{font-size:15px;font-weight:700;letter-spacing:-.01em;color:var(--tg-theme-text-color)}
 .s{font-size:11px;color:var(--tg-theme-hint-color);margin:0 0 12px}
 .code{display:block;font-family:ui-monospace,monospace;font-size:25px;letter-spacing:7px;font-variant-numeric:tabular-nums;user-select:text;-webkit-user-select:text}
@@ -16,13 +14,17 @@
 .hint{display:block;font-size:11px;color:var(--tg-theme-hint-color);margin-top:9px}
 .hint.ok{color:var(--tg-theme-link-color)}
 </style>
-<button class="card" id="b" aria-label="Reveal and copy your code"><span class="hd"><span class="mark" id="m"></span><span class="t">Security Verification</span></span><p class="s">shovith.runs-on.dev · secured download</p><span class="code mask" id="c">&bull;&bull;&bull;&nbsp;&bull;&bull;&bull;</span><span class="hint" id="h">Tap to reveal &amp; copy</span></button>
+<button class="card" id="b" aria-label="Reveal and copy your code"><span class="hd"><svg class="mark" id="m" viewBox="100.6 100.6 523.8 291.8" aria-hidden="1"></svg><span class="t">Security Verification</span></span><p class="s">shovith.runs-on.dev · secured download</p><span class="code mask" id="c">&bull;&bull;&bull;&nbsp;&bull;&bull;&bull;</span><span class="hint" id="h">Tap to reveal &amp; copy</span></button>
 <script>
 var W=window.TelegramWidget||{copyText:function(t){console.log(t)},HapticFeedback:{notificationOccurred:function(){}}};
 var code=null;try{code=JSON.parse(W.chatData).c}catch(e){}
 var B='.XXX.XXX. X...X...X XXXX.X..X ...X.X..X XXX..XXX.'.split(' ');
-for(var r=0,cells=[];r<5;r++)for(var c=0;c<9;c++){var d=document.createElement('div');if(B[r][c]==='X')cells.push(d);document.getElementById('m').appendChild(d)}
-var i=0;var asm=setInterval(function(){if(i>=cells.length)return clearInterval(asm);cells[i++].className='on'},16);
+for(var r=0,cells=[];r<5;r++)for(var c=0;c<9;c++)if(B[r][c]==='X'){
+var e=document.createElementNS('http://www.w3.org/2000/svg','rect');
+e.setAttribute('x',100.6+c*58);e.setAttribute('y',100.6+r*58);
+e.setAttribute('width',59.8);e.setAttribute('height',59.8);e.setAttribute('rx',10.5);
+e.setAttribute('opacity','0');cells.push(e);document.getElementById('m').appendChild(e)}
+var i=0;var asm=setInterval(function(){if(i>=cells.length)return clearInterval(asm);cells[i++].setAttribute('opacity','1')},16);
 var b=document.getElementById('b'),c=document.getElementById('c'),h=document.getElementById('h');
 if(!code){h.textContent='Code unavailable — restart verification on the website'}
 b.addEventListener('click',function(){if(!code)return;
