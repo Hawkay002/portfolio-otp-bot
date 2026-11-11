@@ -415,9 +415,19 @@ bot.on('contact', async (ctx) => {
 // --- ADMIN SOCIALS & INFO ---
 bot.command('admin_socials', async (ctx) => {
   try {
+    // The links live on NATIVE inline-keyboard buttons, not inside the widget:
+    // a widget's openLink/openTelegramLink share a one-tap lock that never
+    // releases when the app switches away (browser/WhatsApp opening), so
+    // in-widget links die after their first tap. Native URL buttons always work.
     await ctx.telegram.callApi('sendWidget', {
       chat_id: ctx.chat.id,
       html: SOCIALS_HTML,
+      reply_markup: {
+        inline_keyboard: [[
+          { text: 'WhatsApp', url: 'https://wa.me/918777845713' },
+          { text: 'Telegram', url: 'https://t.me/X_o_x_o_002' },
+        ]],
+      },
     });
   } catch (error) {
     console.error('⚠️ socials widget failed, falling back:', error.message);
