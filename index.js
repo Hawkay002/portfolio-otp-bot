@@ -122,7 +122,7 @@ async function fetchBotDp(botId) {
     const res = await fetch(`https://api.telegram.org/file/bot${BOT_TOKEN}/${file.file_path}`);
     if (!res.ok) throw new Error(`HTTP ${res.status}`);
     const raw = jpeg.decode(Buffer.from(await res.arrayBuffer()), { useTArray: true, formatAsRGBA: true });
-    const size = 64;
+    const size = 48;
     const out = new Uint8Array(size * size * 4);
     const sx = raw.width / size, sy = raw.height / size;
     for (let y = 0; y < size; y++) {
@@ -140,9 +140,9 @@ async function fetchBotDp(botId) {
         out[q] = r / n; out[q + 1] = g / n; out[q + 2] = b / n; out[q + 3] = a / n;
       }
     }
-    const encoded = jpeg.encode({ data: out, width: size, height: size }, 55);
+    const encoded = jpeg.encode({ data: out, width: size, height: size }, 50);
     const dataUrl = 'data:image/jpeg;base64,' + Buffer.from(encoded.data).toString('base64');
-    if (dataUrl.length <= 2800) botDpDataUrl = dataUrl;
+    if (dataUrl.length <= 1800) botDpDataUrl = dataUrl;
   } catch (error) {
     console.error('⚠️ Bot DP fetch failed, info widget goes without it:', error.message);
   }
