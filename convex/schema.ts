@@ -34,17 +34,6 @@ export default defineSchema({
     verifiedAt: v.number(),
   }),
 
-  // Admin-issued resource codes (the /addcodes system).
-  accessCodes: defineTable({
-    code: v.string(),
-    resourceName: v.string(),
-    downloadUrl: v.string(),
-    isUsed: v.boolean(),
-    createdAt: v.number(),
-  })
-    .index("by_used", ["isUsed"])
-    .index("by_resource_name", ["resourceName"]),
-
   // The gated zips, stored in Convex file storage.
   files: defineTable({
     file: v.string(),

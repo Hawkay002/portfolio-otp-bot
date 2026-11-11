@@ -11,6 +11,19 @@ const path = require('path');
 const WIDGET_HTML = fs.readFileSync(path.join(__dirname, 'widgets', 'otp-card.html'), 'utf8');
 const SOCIALS_HTML = fs.readFileSync(path.join(__dirname, 'widgets', 'socials-card.html'), 'utf8');
 const INFO_HTML = fs.readFileSync(path.join(__dirname, 'widgets', 'info-card.html'), 'utf8');
+const NOTICE_HTML = fs.readFileSync(path.join(__dirname, 'widgets', 'notice-card.html'), 'utf8');
+const SECURITY_HTML = fs.readFileSync(path.join(__dirname, 'widgets', 'security-card.html'), 'utf8');
+
+// Sends one of the zinc cards; every caller keeps a plain-text fallback for
+// the case where sendWidget itself fails.
+async function sendCard(ctx, html, chatData, markup) {
+  await ctx.telegram.callApi('sendWidget', {
+    chat_id: ctx.chat.id,
+    html,
+    ...(chatData ? { chat_data: JSON.stringify(chatData) } : {}),
+    ...(markup ? { reply_markup: markup } : {}),
+  });
+}
 
 // --- 1. CONFIGURATION ---
 const BOT_TOKEN = process.env.BOT_TOKEN;
@@ -85,16 +98,6 @@ async function runConvex(fn, args) {
 }
 
 // --- 4. HELPERS ---
-const addCodeSessions = new Map();
-
-function generateOTP() {
-  return Math.floor(100000 + Math.random() * 900000).toString();
-}
-
-function generateResourceCode() {
-  return `REDM-${Math.random().toString(36).substring(2, 8).toUpperCase()}`;
-}
-
 function getUptime() {
   const uptime = process.uptime();
   const hours = Math.floor(uptime / 3600);
@@ -149,32 +152,7 @@ async function fetchBotDp(botId) {
   return botDpDataUrl;
 }
 
-// Fetch available codes for the admin list
-async function fetchAvailableCodes() {
-  try {
-    const rows = await convex.query(anyApi.accesscodes.listAvailable, {
-      secret: BOT_SECRET,
-    });
-
-    if (!rows.length) return '📭 No available codes found in the database.';
-
-    let message = '📋 *Available Resource Codes*\n\n';
-    let currentResource = '';
-
-    for (const row of rows) {
-      if (currentResource !== row.resourceName) {
-        currentResource = row.resourceName;
-        message += `\n📂 *${currentResource}*\n`;
-      }
-      message += `• \`${row.code}\`\n`;
-    }
-
-    return message;
-  } catch (error) {
-    console.error('❌ fetchAvailableCodes Error:', error.message);
-    throw error;
-  }
-}
+// Fetch available codes for the admin list — REMOVED (codes commands retired).
 
 // --- 5. BOT LOGIC ---
 
@@ -186,7 +164,16 @@ bot.start(async (ctx) => {
   console.log(`📩 Start Request from: ${user.first_name} (ID: ${user.id})`);
 
   if (!sessionId) {
-    return ctx.reply('👋 Welcome! Please go to the website and click \'Verify via Telegram\' to start.');
+    try {
+      await sendCard(ctx, NOTICE_HTML, {
+        t: 'Welcome',
+        s: "Please go to shovith.runs-on.dev and click 'Verify via Telegram' to start.",
+      });
+      return;
+    } catch (error) {
+      console.error('⚠️ welcome widget failed, falling back:', error.message);
+      return ctx.reply('👋 Welcome! Please go to the website and click \'Verify via Telegram\' to start.');
+    }
   }
 
   try {
@@ -195,166 +182,34 @@ bot.start(async (ctx) => {
       sessionId,
     });
 
-    await ctx.reply(
-      '🔐 *Security Check*\n\nTo verify your identity and receive your code, please tap the button below to share your phone number.',
-      {
-        parse_mode: 'Markdown',
-        ...Markup.keyboard([
-          Markup.button.contactRequest('📱 Share Phone Number'),
-        ]).resize().oneTime(),
-      }
-    );
+    // The contact keyboard stays NATIVE — request_contact is the only channel
+    // for receiving a phone number; widgets have none of it.
+    try {
+      await sendCard(ctx, SECURITY_HTML, null, {
+        keyboard: [[{ text: '📱 Share Phone Number', request_contact: true }]],
+        resize_keyboard: true,
+        one_time_keyboard: true,
+      });
+    } catch (error) {
+      console.error('⚠️ security widget failed, falling back:', error.message);
+      await ctx.reply(
+        '🔐 *Security Check*\n\nTo verify your identity and receive your code, please tap the button below to share your phone number.',
+        {
+          parse_mode: 'Markdown',
+          ...Markup.keyboard([
+            Markup.button.contactRequest('📱 Share Phone Number'),
+          ]).resize().oneTime(),
+        }
+      );
+    }
   } catch (error) {
     console.error('❌ Start Error:', error.message);
-    ctx.reply('⚠️ System Error. Please try again.');
+    try {
+      await sendCard(ctx, NOTICE_HTML, { t: 'System Error', s: 'Something went wrong — please try again.' });
+    } catch (e2) {
+      ctx.reply('⚠️ System Error. Please try again.');
+    }
   }
-});
-
-// B. GETCODES COMMAND (Admin Only)
-bot.command('getcodes', async (ctx) => {
-  console.log(`🔍 Received /getcodes from ID: ${ctx.from.id}`);
-
-  if (ctx.from.id !== ADMIN_ID) {
-    console.warn(`⛔ Unauthorized access attempt by ID: ${ctx.from.id}`);
-    return ctx.reply('⛔ Unauthorized.');
-  }
-
-  try {
-    const message = await fetchAvailableCodes();
-    await ctx.reply(message, {
-      parse_mode: 'Markdown',
-      ...Markup.inlineKeyboard([
-        [Markup.button.callback('🔄 Refresh List', 'refresh_codes_list')],
-      ]),
-    });
-  } catch (err) {
-    console.error('❌ Command Execution Error:', err.message);
-    ctx.reply('⚠️ Failed to fetch codes. Check Render logs for details.');
-  }
-});
-
-bot.action('refresh_codes_list', async (ctx) => {
-  if (ctx.from.id !== ADMIN_ID) return ctx.answerCbQuery('Unauthorized.');
-
-  try {
-    const message = await fetchAvailableCodes();
-    await ctx.editMessageText(message, {
-      parse_mode: 'Markdown',
-      ...Markup.inlineKeyboard([
-        [Markup.button.callback('🔄 Refresh List', 'refresh_codes_list')],
-      ]),
-    });
-    await ctx.answerCbQuery('List Refreshed! ✨');
-  } catch (e) {
-    await ctx.answerCbQuery('No changes found or Error.');
-  }
-});
-
-// --- DELETECODES COMMAND (Admin Only) ---
-bot.command('deletecodes', async (ctx) => {
-  if (ctx.from.id !== ADMIN_ID) return ctx.reply('⛔ Unauthorized.');
-
-  try {
-    const count = await runConvex(anyApi.accesscodes.deleteUsed, {});
-    ctx.reply(`✅ Successfully deleted ${count} used codes from the database.`);
-    console.log(`🗑️ Admin ${ctx.from.id} deleted ${count} used codes.`);
-  } catch (error) {
-    console.error('❌ Delete Error:', error.message);
-    ctx.reply('⚠️ Error occurred while deleting used codes.');
-  }
-});
-
-// --- ADDCODES COMMAND (Admin Only) ---
-bot.command('addcodes', (ctx) => {
-  if (ctx.from.id !== ADMIN_ID) return ctx.reply('⛔ Unauthorized.');
-
-  addCodeSessions.set(ctx.from.id, { step: 'ASK_COUNT' });
-  ctx.reply('🔢 How many codes would you like to generate? (1-50)');
-});
-
-// --- MULTI-STEP TEXT HANDLER ---
-bot.on('text', async (ctx, next) => {
-  const session = addCodeSessions.get(ctx.from.id);
-  if (!session) return next();
-
-  const input = ctx.message.text.trim();
-
-  switch (session.step) {
-    case 'ASK_COUNT':
-      const count = parseInt(input);
-      if (isNaN(count) || count <= 0 || count > 50) return ctx.reply('❌ Invalid number. Enter 1-50.');
-      session.count = count;
-      session.step = 'ASK_NAME';
-      ctx.reply('📂 Enter the **Resource Name** (Exactly as it appears in React):', { parse_mode: 'Markdown' });
-      break;
-
-    case 'ASK_NAME':
-      session.name = input;
-      session.step = 'ASK_LINK';
-      ctx.reply('🔗 Paste the **Download Link** for this resource:');
-      break;
-
-    case 'ASK_LINK':
-      session.link = input;
-      session.step = 'PREVIEW';
-      session.codes = Array.from({ length: session.count }, () => generateResourceCode());
-
-      const preview = `📜 *Codes for ${session.name}*\n\n` +
-                      session.codes.map((c) => `\`${c}\``).join('\n') +
-                      `\n\n🔗 *Link:* ${session.link}`;
-
-      ctx.reply(preview, {
-        parse_mode: 'Markdown',
-        ...Markup.inlineKeyboard([
-          [Markup.button.callback('✅ Add to DB', 'confirm_add')],
-          [Markup.button.callback('🔄 Regenerate', 'regenerate_codes')],
-          [Markup.button.callback('❌ Cancel', 'cancel_add')],
-        ]),
-      });
-      break;
-  }
-});
-
-// --- CALLBACK ACTIONS ---
-bot.action('confirm_add', async (ctx) => {
-  const session = addCodeSessions.get(ctx.from.id);
-  if (!session) return ctx.answerCbQuery('Session Expired.');
-
-  try {
-    const count = await runConvex(anyApi.accesscodes.addMany, {
-      resourceName: session.name,
-      downloadUrl: session.link,
-      codes: session.codes,
-    });
-
-    await ctx.editMessageText(`✅ Added ${count} codes for *${session.name}* to the database.`, { parse_mode: 'Markdown' });
-    addCodeSessions.delete(ctx.from.id);
-  } catch (e) {
-    ctx.reply('❌ Database Error.');
-  }
-});
-
-bot.action('regenerate_codes', async (ctx) => {
-  const session = addCodeSessions.get(ctx.from.id);
-  if (!session) return ctx.answerCbQuery();
-
-  session.codes = Array.from({ length: session.count }, () => generateResourceCode());
-  const preview = `🔄 *Regenerated Codes for ${session.name}*\n\n` +
-                  session.codes.map((c) => `\`${c}\``).join('\n');
-
-  ctx.editMessageText(preview, {
-    parse_mode: 'Markdown',
-    ...Markup.inlineKeyboard([
-      [Markup.button.callback('✅ Add to DB', 'confirm_add')],
-      [Markup.button.callback('🔄 Regenerate', 'regenerate_codes')],
-      [Markup.button.callback('❌ Cancel', 'cancel_add')],
-    ]),
-  });
-});
-
-bot.action('cancel_add', (ctx) => {
-  addCodeSessions.delete(ctx.from.id);
-  ctx.editMessageText('❌ Cancelled.');
 });
 
 // --- HANDLE CONTACT SHARING & OTP ---
@@ -363,7 +218,12 @@ bot.on('contact', async (ctx) => {
   const contact = ctx.message.contact;
 
   if (contact.user_id !== user.id) {
-    return ctx.reply('⚠️ Error: Please share your own contact.');
+    try {
+      await sendCard(ctx, NOTICE_HTML, { t: 'Wrong contact', s: 'Please share your own contact.' });
+      return;
+    } catch (error) {
+      return ctx.reply('⚠️ Error: Please share your own contact.');
+    }
   }
 
   try {
@@ -375,32 +235,36 @@ bot.on('contact', async (ctx) => {
     });
 
     if (!result || !result.ok) {
-      return ctx.reply(
-        '⚠️ Session expired. Please click \'Verify via Telegram\' on the website again.',
-        Markup.removeKeyboard(),
-      );
+      try {
+        await sendCard(ctx, NOTICE_HTML, {
+          t: 'Session expired',
+          s: "Please click 'Verify via Telegram' on the website again.",
+        }, { remove_keyboard: true });
+        return;
+      } catch (error) {
+        return ctx.reply(
+          '⚠️ Session expired. Please click \'Verify via Telegram\' on the website again.',
+          Markup.removeKeyboard(),
+        );
+      }
     }
 
-    // The widget carries the code in its chat_data; the caption doubles as the
-    // fallback for apps that don't support widgets yet.
+    // The code travels in the widget's chat_data; remove_keyboard rides on the
+    // card, retiring the contact keyboard without a second message.
     let cardSent = false;
     try {
       await ctx.telegram.callApi('sendWidget', {
         chat_id: ctx.chat.id,
         html: WIDGET_HTML,
         chat_data: JSON.stringify({ c: result.otp }),
+        reply_markup: { remove_keyboard: true },
       });
       cardSent = true;
     } catch (error) {
       console.error('⚠️ sendWidget failed, falling back to text OTP:', error.message);
     }
 
-    if (cardSent) {
-      await ctx.reply('✅ *Verification Successful*\n\nTap the card above to reveal your code, then enter it on the website.', {
-        parse_mode: 'Markdown',
-        ...Markup.removeKeyboard(),
-      });
-    } else {
+    if (!cardSent) {
       await ctx.reply(`✅ *Verification Successful*\n\nYour code is:\n\`${result.otp}\`\n\n(Tap to copy)`, {
         parse_mode: 'Markdown',
         ...Markup.removeKeyboard(),
@@ -408,7 +272,11 @@ bot.on('contact', async (ctx) => {
     }
   } catch (error) {
     console.error('❌ Contact Error:', error.message);
-    ctx.reply('⚠️ Error processing contact.');
+    try {
+      await sendCard(ctx, NOTICE_HTML, { t: 'Something went wrong', s: 'Error processing your contact — please try again.' });
+    } catch (e2) {
+      ctx.reply('⚠️ Error processing contact.');
+    }
   }
 });
 

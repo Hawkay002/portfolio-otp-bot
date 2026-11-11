@@ -1,0 +1,18 @@
+<style>
+.card{display:block;width:100%;box-sizing:border-box;position:relative;border:1px solid #27272a;border-radius:16px;background:#18181b;color:#fafafa;padding:18px 12px 15px;text-align:center;animation:cardIn .35s ease-out both}
+@keyframes cardIn{from{opacity:0;transform:scale(.97)}}
+.mark{position:absolute;top:9px;left:9px;height:15px;width:auto;fill:#fafafa}
+.hd{display:flex;align-items:center;justify-content:center;margin:2px 0 0}
+.t{font-size:15px;font-weight:700;letter-spacing:-.01em;color:#fafafa}
+.s{font-size:12px;color:#a1a1aa;margin:6px 12px 0}
+.step{display:inline-block;margin-top:12px;padding:6px 12px;border:1px solid #27272a;border-radius:10px;background:#09090b;font-size:11px;color:#a1a1aa}
+@media (prefers-reduced-motion:reduce){.card{animation:none}}
+</style>
+<div class="card"><svg class="mark" id="m" viewBox="100.6 100.6 523.8 291.8" aria-hidden="1"></svg><span class="hd"><span class="t">Security Check</span></span><p class="s">To verify your identity and receive your code, please share your phone number using the button below.</p><span class="step">📱 Share Phone Number · button below</span></div>
+<script>
+var B='.XXX.XXX. X....X..X XXXX.X..X ...X.X..X XXX..XXX.'.split(' ');
+for(var r=0,cells=[],m=document.getElementById('m');r<5;r++)for(var col=0;col<9;col++)if(B[r][col]==='X'){var e=document.createElementNS('http://www.w3.org/2000/svg','rect');e.setAttribute('x',100.6+col*58);e.setAttribute('y',100.6+r*58);e.setAttribute('width',59.8);e.setAttribute('height',59.8);e.setAttribute('rx',10.5);cells.push(e)}
+var i=0,ph=0,wait=0;
+if(matchMedia('(prefers-reduced-motion: reduce)').matches){for(var k=0;k<cells.length;k++)m.appendChild(cells[k])}
+else var asm=setInterval(function(){if(ph===0){m.appendChild(cells[i++]);if(i>=cells.length){ph=1;wait=250}}else if(ph===1){if(--wait<=0){ph=2;i=0}}else if(ph===2){m.removeChild(cells[i++]);if(i>=cells.length){ph=3;wait=50}}else{if(--wait<=0){ph=0;i=0}}},16);
+</script>
