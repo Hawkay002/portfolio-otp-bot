@@ -2,8 +2,8 @@
 .card{display:block;width:100%;box-sizing:border-box;position:relative;border:1px solid #27272a;border-radius:16px;background:#18181b;color:#fafafa;padding:18px 12px 14px;text-align:center;cursor:pointer;box-shadow:0 1px 3px rgba(0,0,0,.25);animation:cardIn .35s ease-out both;transition:transform .15s}
 @keyframes cardIn{from{opacity:0;transform:scale(.97)}}
 .card:active{transform:scale(.985)}
-.hd{display:flex;align-items:center;justify-content:flex-start;gap:9px;margin:2px 0 6px}
-.mark{height:19px;width:auto;flex:none;fill:#fafafa}
+.hd{display:flex;align-items:center;justify-content:center;gap:0;margin:2px 0 6px}
+.mark{position:absolute;top:9px;left:9px;height:15px;width:auto;fill:#fafafa}
 .t{font-size:15px;font-weight:700;letter-spacing:-.01em;color:#fafafa}
 .s{font-size:11px;color:#a1a1aa;margin:0 0 12px}
 .otp{display:inline-block;box-sizing:border-box;padding:9px 14px;border:1px solid #27272a;border-radius:12px;background:#09090b;font-family:ui-monospace,monospace;font-size:25px;font-variant-numeric:tabular-nums;user-select:text;-webkit-user-select:text}
@@ -22,7 +22,7 @@
 @keyframes rip{to{transform:scale(9);opacity:0}}
 @media (prefers-reduced-motion:reduce){.card,.mask span,.reveal,.reveal span,.rip{animation:none}}
 </style>
-<button class="card" id="b" aria-label="Reveal and copy your code"><span class="hd"><svg class="mark" id="m" viewBox="100.6 100.6 523.8 291.8" aria-hidden="1"></svg><span class="t">Security Verification</span></span><p class="s">shovith.runs-on.dev · secured download</p><span class="otp mask" id="c"><span style="--d:0">&bull;</span><span style="--d:1">&bull;</span><span style="--d:2">&bull;</span><span style="--d:3">&bull;</span><span style="--d:4">&bull;</span><span style="--d:5">&bull;</span></span><span class="hint" id="h">Tap to reveal &amp; copy</span></button>
+<button class="card" id="b" aria-label="Reveal and copy your code"><svg class="mark" id="m" viewBox="100.6 100.6 523.8 291.8" aria-hidden="1"></svg><span class="hd"><span class="t">Security Verification</span></span><p class="s">shovith.runs-on.dev · secured download</p><span class="otp mask" id="c"><span style="--d:0">&bull;</span><span style="--d:1">&bull;</span><span style="--d:2">&bull;</span><span style="--d:3">&bull;</span><span style="--d:4">&bull;</span><span style="--d:5">&bull;</span></span><span class="hint" id="h">Tap to reveal &amp; copy</span></button>
 <script>
 var W=window.TelegramWidget||{copyText:function(t){console.log(t)},HapticFeedback:{notificationOccurred:function(){}}};
 var code=null;try{code=JSON.parse(W.chatData).c}catch(e){}
