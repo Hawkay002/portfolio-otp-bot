@@ -25,7 +25,7 @@
 <script>
 var W=window.TelegramWidget||{copyText:function(t){console.log(t)},HapticFeedback:{notificationOccurred:function(){}}};
 var code=null;try{code=JSON.parse(W.chatData).c}catch(e){}
-var B='.XXX.XXX. X...X...X XXXX.X..X ...X.X..X XXX..XXX.'.split(' ');
+var B='.XXX.XXX. X....X..X XXXX.X..X ...X.X..X XXX..XXX.'.split(' ');
 for(var r=0,cells=[];r<5;r++)for(var c=0;c<9;c++)if(B[r][c]==='X'){
 var e=document.createElementNS('http://www.w3.org/2000/svg','rect');
 e.setAttribute('x',100.6+c*58);e.setAttribute('y',100.6+r*58);
