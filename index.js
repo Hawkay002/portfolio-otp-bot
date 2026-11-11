@@ -340,7 +340,6 @@ bot.on('contact', async (ctx) => {
         chat_id: ctx.chat.id,
         html: WIDGET_HTML,
         chat_data: JSON.stringify({ c: result.otp }),
-        caption: '🔐 Your verification code is hidden in the card above — tap it to reveal and copy. (Requires an updated Telegram app.)',
       });
       cardSent = true;
     } catch (error) {
