@@ -4,6 +4,9 @@
 .mark{position:absolute;top:9px;left:9px;height:15px;width:auto;fill:#fafafa}
 .t{font-size:15px;font-weight:700;letter-spacing:-.01em;color:#fafafa}
 .blk{margin:0 0 10px;padding:11px 12px;border:1px solid #27272a;border-radius:12px;background:#09090b;text-align:left}
+.id{display:flex;gap:10px;align-items:center}
+.who{flex:1;min-width:0}
+.dp{width:46px;height:46px;border-radius:50%;border:1px solid #27272a;background:#27272a;object-fit:cover;flex:none}
 .nm{font-size:14px;font-weight:700;color:#fafafa}
 .un{font-size:11.5px;color:#a1a1aa;font-family:ui-monospace,monospace;margin-top:2px}
 .row{display:flex;justify-content:space-between;gap:10px;padding:4.5px 2px;font-size:12px;border-bottom:1px solid rgba(250,250,250,.06)}
@@ -13,7 +16,7 @@
 .c{font-size:10px;color:#a1a1aa;margin-top:2px}
 @media (prefers-reduced-motion:reduce){.card{animation:none}}
 </style>
-<div class="card"><svg class="mark" id="m" viewBox="100.6 100.6 523.8 291.8" aria-hidden="1"></svg><span class="t">Bot Info</span><div class="blk"><div class="nm" id="nm"></div><div class="un" id="un"></div><div class="un">Bot ID: <span id="bid"></span></div></div><div class="blk"><div class="row"><span class="k">Creator</span><span class="v">Shovith (Sid)</span></div><div class="row"><span class="k">Uptime</span><span class="v" id="up"></span></div><div class="row"><span class="k">Language</span><span class="v">Node.js</span></div><div class="row"><span class="k">Library</span><span class="v">Telegraf.js</span></div><div class="row"><span class="k">Database</span><span class="v">Convex</span></div><div class="row"><span class="k">Hosting</span><span class="v">Render</span></div></div><p class="c" id="cp"></p></div>
+<div class="card"><svg class="mark" id="m" viewBox="100.6 100.6 523.8 291.8" aria-hidden="1"></svg><span class="t">Bot Info</span><div class="blk id"><div class="who"><div class="nm" id="nm"></div><div class="un" id="un"></div><div class="un">Bot ID: <span id="bid"></span></div></div><img class="dp" id="dp" src="__DP__" alt=""></div><div class="blk"><div class="row"><span class="k">Creator</span><span class="v">Shovith (Sid)</span></div><div class="row"><span class="k">Uptime</span><span class="v" id="up"></span></div><div class="row"><span class="k">Language</span><span class="v">Node.js</span></div><div class="row"><span class="k">Library</span><span class="v">Telegraf.js</span></div><div class="row"><span class="k">Database</span><span class="v">Convex</span></div><div class="row"><span class="k">Hosting</span><span class="v">Render</span></div></div><p class="c" id="cp"></p></div>
 <script>
 var W=window.TelegramWidget||{};
 var d={};try{d=JSON.parse(W.chatData)}catch(e){}
@@ -22,6 +25,8 @@ document.getElementById('un').textContent=d.un?'@'+d.un:'';
 document.getElementById('bid').textContent=d.id||'—';
 document.getElementById('up').textContent=d.u||'—';
 document.getElementById('cp').textContent='© 2026 '+(d.n||'Bot')+'. All rights reserved.';
+var dp=document.getElementById('dp');
+if((dp.getAttribute('src')||'').indexOf('data:')!==0)dp.style.display='none';
 var B='.XXX.XXX. X....X..X XXXX.X..X ...X.X..X XXX..XXX.'.split(' ');
 for(var r=0,cells=[],m=document.getElementById('m');r<5;r++)for(var col=0;col<9;col++)if(B[r][col]==='X'){var e=document.createElementNS('http://www.w3.org/2000/svg','rect');e.setAttribute('x',100.6+col*58);e.setAttribute('y',100.6+r*58);e.setAttribute('width',59.8);e.setAttribute('height',59.8);e.setAttribute('rx',10.5);cells.push(e)}
 var i=0,ph=0,wait=0;

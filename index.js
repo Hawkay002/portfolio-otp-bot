@@ -1,5 +1,6 @@
 const { Telegraf, Markup } = require('telegraf');
 const { ConvexHttpClient } = require('convex/browser');
+const jpeg = require('jpeg-js');
 const express = require('express');
 const fs = require('fs');
 const path = require('path');
@@ -100,6 +101,52 @@ function getUptime() {
   const minutes = Math.floor((uptime % 3600) / 60);
   const seconds = Math.floor(uptime % 60);
   return `${hours}h ${minutes}m ${seconds}s`;
+}
+
+// The bot's profile photo, downscaled to a tiny base64 JPEG for the info
+// widget. A widget's images can only travel inline as data: URLs and the
+// whole HTML must stay under the 4096-byte compressed limit, so the photo is
+// fetched once per process, box-sampled down to 64x64 and re-encoded at
+// quality 55; anything that would push the card past the limit is dropped.
+let botDpDataUrl = null;
+let botDpFetched = false;
+
+async function fetchBotDp(botId) {
+  if (botDpFetched) return botDpDataUrl;
+  botDpFetched = true;
+  try {
+    const photos = await bot.telegram.getUserProfilePhotos(botId, 0, 1);
+    if (!photos.total_count) return null;
+    const smallest = photos.photos[0][0];
+    const file = await bot.telegram.getFile(smallest.file_id);
+    const res = await fetch(`https://api.telegram.org/file/bot${BOT_TOKEN}/${file.file_path}`);
+    if (!res.ok) throw new Error(`HTTP ${res.status}`);
+    const raw = jpeg.decode(Buffer.from(await res.arrayBuffer()), { useTArray: true, formatAsRGBA: true });
+    const size = 64;
+    const out = new Uint8Array(size * size * 4);
+    const sx = raw.width / size, sy = raw.height / size;
+    for (let y = 0; y < size; y++) {
+      for (let x = 0; x < size; x++) {
+        const x0 = Math.floor(x * sx), x1 = Math.max(x0 + 1, Math.floor((x + 1) * sx));
+        const y0 = Math.floor(y * sy), y1 = Math.max(y0 + 1, Math.floor((y + 1) * sy));
+        let r = 0, g = 0, b = 0, a = 0, n = 0;
+        for (let yy = y0; yy < y1; yy++) {
+          for (let xx = x0; xx < x1; xx++) {
+            const p = (yy * raw.width + xx) * 4;
+            r += raw.data[p]; g += raw.data[p + 1]; b += raw.data[p + 2]; a += raw.data[p + 3]; n++;
+          }
+        }
+        const q = (y * size + x) * 4;
+        out[q] = r / n; out[q + 1] = g / n; out[q + 2] = b / n; out[q + 3] = a / n;
+      }
+    }
+    const encoded = jpeg.encode({ data: out, width: size, height: size }, 55);
+    const dataUrl = 'data:image/jpeg;base64,' + Buffer.from(encoded.data).toString('base64');
+    if (dataUrl.length <= 2800) botDpDataUrl = dataUrl;
+  } catch (error) {
+    console.error('⚠️ Bot DP fetch failed, info widget goes without it:', error.message);
+  }
+  return botDpDataUrl;
 }
 
 // Fetch available codes for the admin list
@@ -387,10 +434,11 @@ bot.command('admin_socials', async (ctx) => {
 bot.command('info', async (ctx) => {
   try {
     const botInfo = await ctx.telegram.getMe();
+    const dp = await fetchBotDp(botInfo.id);
     try {
       await ctx.telegram.callApi('sendWidget', {
         chat_id: ctx.chat.id,
-        html: INFO_HTML,
+        html: INFO_HTML.replace('__DP__', dp || ''),
         chat_data: JSON.stringify({
           n: botInfo.first_name,
           un: botInfo.username,
