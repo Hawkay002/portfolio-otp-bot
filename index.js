@@ -167,7 +167,11 @@ bot.start(async (ctx) => {
     try {
       await sendCard(ctx, NOTICE_HTML, {
         t: 'Welcome',
-        s: "Please go to shovith.runs-on.dev and click 'Verify via Telegram' to start.",
+        s: "Tap below to open the website, then click 'Verify via Telegram' to start.",
+      }, {
+        inline_keyboard: [[
+          { text: 'Visit Website', url: 'https://shovith.runs-on.dev' },
+        ]],
       });
       return;
     } catch (error) {
