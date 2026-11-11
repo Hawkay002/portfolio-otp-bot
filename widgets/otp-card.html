@@ -1,39 +1,32 @@
 <style>
-.card{display:block;width:100%;box-sizing:border-box;position:relative;overflow:hidden;border:1px solid transparent;border-radius:16px;background:var(--tg-theme-secondary-bg-color);color:var(--tg-theme-text-color);padding:18px 12px 14px;text-align:center;cursor:pointer;box-shadow:0 1px 3px rgba(0,0,0,.12);animation:cardIn .5s cubic-bezier(.2,.9,.3,1.1) both;transition:transform .15s}
-@keyframes cardIn{from{opacity:0;transform:scale(.96)}}
+.card{display:block;width:100%;box-sizing:border-box;position:relative;border:1px solid #27272a;border-radius:16px;background:#18181b;color:#fafafa;padding:18px 12px 14px;text-align:center;cursor:pointer;box-shadow:0 1px 3px rgba(0,0,0,.25);animation:cardIn .35s ease-out both;transition:transform .15s}
+@keyframes cardIn{from{opacity:0;transform:scale(.97)}}
 .card:active{transform:scale(.985)}
-.halo{position:absolute;left:50%;top:12px;width:120px;height:46px;margin-left:-60px;background:radial-gradient(closest-side,var(--tg-theme-link-color),transparent 72%);opacity:.16;animation:halo 3.5s ease-in-out infinite;pointer-events:none}
-@keyframes halo{50%{opacity:.3}}
-.hd,.s,.code,.hint{position:relative}
 .hd{display:flex;align-items:center;justify-content:center;gap:9px;margin:2px 0 6px}
-.mark{height:19px;width:auto;flex:none;fill:var(--tg-theme-text-color)}
-.t{font-size:15px;font-weight:700;letter-spacing:-.01em;color:var(--tg-theme-text-color)}
-.s{font-size:11px;color:var(--tg-theme-hint-color);margin:0 0 12px}
-.code{display:inline-block;box-sizing:border-box;padding:9px 14px;border:1px solid transparent;border-radius:12px;background:var(--tg-theme-bg-color);font-family:ui-monospace,monospace;font-size:25px;font-variant-numeric:tabular-nums;user-select:text;-webkit-user-select:text}
-.code span{display:inline-block;margin-right:7px}
-.mask span{color:var(--tg-theme-hint-color);animation:pulse 1.8s ease-in-out infinite;animation-delay:calc(var(--d)*.18s)}
+.mark{height:19px;width:auto;flex:none;fill:#fafafa}
+.t{font-size:15px;font-weight:700;letter-spacing:-.01em;color:#fafafa}
+.s{font-size:11px;color:#a1a1aa;margin:0 0 12px}
+.otp{display:inline-block;box-sizing:border-box;padding:9px 14px;border:1px solid #27272a;border-radius:12px;background:#09090b;font-family:ui-monospace,monospace;font-size:25px;font-variant-numeric:tabular-nums;user-select:text;-webkit-user-select:text}
+.otp:hover{border-color:#3f3f46}
+.otp span{display:inline-block;margin-right:7px}
+.mask span{color:#52525b;animation:pulse 1.8s ease-in-out infinite;animation-delay:calc(var(--d)*.18s)}
 .mask span:last-child,.reveal span:last-child{margin-right:0}
 @keyframes pulse{50%{opacity:.35}}
 .reveal{letter-spacing:0;animation:pop .35s .55s both}
-.reveal span{animation:rise .4s both;animation-delay:calc(var(--d)*.05s)}
+.reveal span{color:#fafafa;animation:rise .4s both;animation-delay:calc(var(--d)*.05s)}
 @keyframes rise{from{opacity:0;transform:translateY(6px)}}
 @keyframes pop{40%{transform:scale(1.035)}}
-.hint{display:block;font-size:11px;color:var(--tg-theme-hint-color);margin-top:10px}
-.hint.ok{color:var(--tg-theme-link-color)}
-.card::after{content:'';position:absolute;top:0;bottom:0;left:0;width:45%;transform:translateX(-130%) skewX(-16deg);background:linear-gradient(90deg,transparent,rgba(255,255,255,.15),transparent);animation:sweep 1.4s .45s cubic-bezier(.4,0,.2,1) both;pointer-events:none}
-@keyframes sweep{to{transform:translateX(320%) skewX(-16deg)}}
-.rip{position:absolute;width:14px;height:14px;margin:-7px 0 0 -7px;border-radius:50%;background:var(--tg-theme-hint-color);opacity:.35;animation:rip .55s ease-out both;pointer-events:none}
+.hint{display:block;font-size:11px;color:#a1a1aa;margin-top:10px}
+.hint.ok{color:#fafafa}
+.rip{position:absolute;width:14px;height:14px;margin:-7px 0 0 -7px;border-radius:50%;background:#a1a1aa;opacity:.25;animation:rip .55s ease-out both;pointer-events:none}
 @keyframes rip{to{transform:scale(9);opacity:0}}
-@media (prefers-reduced-motion:reduce){.card,.halo,.mask span,.reveal,.reveal span,.card::after,.rip{animation:none}}
+@media (prefers-reduced-motion:reduce){.card,.mask span,.reveal,.reveal span,.rip{animation:none}}
 </style>
-<button class="card" id="b" aria-label="Reveal and copy your code"><span class="halo"></span><span class="hd"><svg class="mark" id="m" viewBox="100.6 100.6 523.8 291.8" aria-hidden="1"></svg><span class="t">Security Verification</span></span><p class="s">shovith.runs-on.dev · secured download</p><span class="code mask" id="c"><span style="--d:0">&bull;</span><span style="--d:1">&bull;</span><span style="--d:2">&bull;</span><span style="--d:3">&bull;</span><span style="--d:4">&bull;</span><span style="--d:5">&bull;</span></span><span class="hint" id="h">Tap to reveal &amp; copy</span></button>
+<button class="card" id="b" aria-label="Reveal and copy your code"><span class="hd"><svg class="mark" id="m" viewBox="100.6 100.6 523.8 291.8" aria-hidden="1"></svg><span class="t">Security Verification</span></span><p class="s">shovith.runs-on.dev · secured download</p><span class="otp mask" id="c"><span style="--d:0">&bull;</span><span style="--d:1">&bull;</span><span style="--d:2">&bull;</span><span style="--d:3">&bull;</span><span style="--d:4">&bull;</span><span style="--d:5">&bull;</span></span><span class="hint" id="h">Tap to reveal &amp; copy</span></button>
 <script>
 var W=window.TelegramWidget||{copyText:function(t){console.log(t)},HapticFeedback:{notificationOccurred:function(){}}};
 var code=null;try{code=JSON.parse(W.chatData).c}catch(e){}
-var T=W.themeParams||{};
-function rgba(h,a){var n=parseInt(h.slice(1),16);return 'rgba('+(n>>16&255)+','+(n>>8&255)+','+(n&255)+','+a+')'}
 var b=document.getElementById('b'),c=document.getElementById('c'),h=document.getElementById('h');
-b.style.borderColor=rgba(T.hint_color||'#8a8a8e',.35);
 var B='.XXX.XXX. X....X..X XXXX.X..X ...X.X..X XXX..XXX.'.split(' ');
 for(var r=0,cells=[];r<5;r++)for(var col=0;col<9;col++)if(B[r][col]==='X'){
 var e=document.createElementNS('http://www.w3.org/2000/svg','rect');
@@ -41,8 +34,8 @@ e.setAttribute('x',100.6+col*58);e.setAttribute('y',100.6+r*58);
 e.setAttribute('width',59.8);e.setAttribute('height',59.8);e.setAttribute('rx',10.5);
 cells.push(e)}
 var i=0;var asm=setInterval(function(){if(i>=cells.length)return clearInterval(asm);document.getElementById('m').appendChild(cells[i++])},16);
-function celebrate(){var lc=T.link_color||'#3390ec',k=0,ph=0;
-var rv=setInterval(function(){cells[k].style.fill=ph?'':lc;
+function celebrate(){var k=0,ph=0;
+var rv=setInterval(function(){cells[k].style.fill=ph?'':'#52525b';
 if(++k>=cells.length){k=0;if(++ph>1){clearInterval(rv);return}}},26)}
 if(!code){h.textContent='Code unavailable — restart verification on the website'}
 b.addEventListener('pointerdown',function(ev){
@@ -50,10 +43,9 @@ var rc=b.getBoundingClientRect(),d=document.createElement('div');
 d.className='rip';d.style.left=(ev.clientX-rc.left)+'px';d.style.top=(ev.clientY-rc.top)+'px';
 b.appendChild(d);setTimeout(function(){d.remove()},600)});
 b.addEventListener('click',function(){if(!code)return;
-if(c.className==='code mask'){
+if(c.className==='otp mask'){
 var s='';for(var k=0;k<6;k++)s+='<span style="--d:'+k+'">'+code[k]+'</span>';
-c.className='code reveal';c.innerHTML=s}
+c.className='otp reveal';c.innerHTML=s}
 W.copyText(code);W.HapticFeedback.notificationOccurred('success');
-h.className='hint ok';h.textContent='Copied — enter it on the website';
-c.style.borderColor=rgba(T.link_color||'#3390ec',.55);celebrate()});
+h.className='hint ok';h.textContent='Copied — enter it on the website';celebrate()});
 </script>
