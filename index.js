@@ -13,6 +13,7 @@ const SOCIALS_HTML = fs.readFileSync(path.join(__dirname, 'widgets', 'socials-ca
 const INFO_HTML = fs.readFileSync(path.join(__dirname, 'widgets', 'info-card.html'), 'utf8');
 const NOTICE_HTML = fs.readFileSync(path.join(__dirname, 'widgets', 'notice-card.html'), 'utf8');
 const SECURITY_HTML = fs.readFileSync(path.join(__dirname, 'widgets', 'security-card.html'), 'utf8');
+const UPTIME_HTML = fs.readFileSync(path.join(__dirname, 'widgets', 'uptime-card.html'), 'utf8');
 
 // Sends one of the zinc cards; every caller keeps a plain-text fallback for
 // the case where sendWidget itself fails.
@@ -281,6 +282,73 @@ bot.on('contact', async (ctx) => {
     } catch (e2) {
       ctx.reply('⚠️ Error processing contact.');
     }
+  }
+});
+
+// --- UPTIME STATUS (UptimeRobot) ---
+// Monitor state, cached 30s server-side: the widget polls through
+// widget_query background requests and the free UptimeRobot API is
+// rate-limited to ~10 requests/min, so every card shares one cache.
+let urCache = null;
+
+async function fetchUptimeMonitor() {
+  if (urCache && Date.now() - urCache.at < 30000) return urCache.data;
+  const key = process.env.UPTIMEROBOT_API_KEY;
+  if (!key) return { e: 'nokey' };
+  const res = await fetch('https://api.uptimerobot.com/v2/getMonitors', {
+    method: 'POST',
+    headers: { 'Content-Type': 'application/json' },
+    body: JSON.stringify({ api_key: key, format: 'json', custom_uptime_ratios: '30' }),
+  });
+  const body = await res.json();
+  const monitor = body?.monitors?.[0];
+  if (!monitor) return { e: body?.stat || 'empty' };
+  urCache = { at: Date.now(), data: monitor };
+  return monitor;
+}
+
+bot.command('uptime', async (ctx) => {
+  try {
+    // allow_queries lets the card poll status in the background and on tap.
+    await ctx.telegram.callApi('sendWidget', {
+      chat_id: ctx.chat.id,
+      html: UPTIME_HTML,
+      allow_queries: true,
+    });
+  } catch (error) {
+    console.error('⚠️ uptime widget failed, falling back:', error.message);
+    try {
+      const m = await fetchUptimeMonitor();
+      const state = m.status === 2 ? 'UP' : (m.status === 8 || m.status === 9) ? 'DOWN' : `status ${m.status}`;
+      ctx.reply(`⏱ *${m.friendly_name || 'Uptime Monitor'}*: ${state} — ${parseFloat(m.custom_uptime_ratio || 0).toFixed(2)}% (30d)`, { parse_mode: 'Markdown' });
+    } catch (e2) {
+      ctx.reply('⚠️ Could not fetch uptime status.');
+    }
+  }
+});
+
+// Widget queries: the uptime card's `request('st')` lands here. Telegraf
+// predates 10.4's update types, so catch the raw update via middleware.
+bot.use(async (ctx, next) => {
+  const wq = ctx.update.widget_query;
+  if (!wq) return next();
+  try {
+    if (wq.data === 'st') {
+      const m = await fetchUptimeMonitor();
+      await ctx.telegram.callApi('answerWidgetQuery', {
+        widget_query_id: wq.id,
+        data: JSON.stringify({
+          s: typeof m.status === 'number' ? String(m.status) : '',
+          p: typeof m.custom_uptime_ratio === 'string' ? m.custom_uptime_ratio : String(m.custom_uptime_ratio ?? 0),
+          n: m.friendly_name || '',
+          ...(m.e ? { e: m.e } : {}),
+        }),
+      });
+    } else {
+      await ctx.telegram.callApi('answerWidgetQuery', { widget_query_id: wq.id });
+    }
+  } catch (error) {
+    console.error('❌ widget_query error:', error.message);
   }
 });
 

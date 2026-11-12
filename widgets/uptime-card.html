@@ -1,0 +1,50 @@
+<style>
+.card{display:block;width:100%;box-sizing:border-box;position:relative;border:1px solid #27272a;border-radius:16px;background:#18181b;color:#fafafa;padding:18px 12px 14px;text-align:center;cursor:pointer;animation:cardIn .35s ease-out both}
+@keyframes cardIn{from{opacity:0;transform:scale(.97)}}
+.mark{position:absolute;top:9px;left:9px;height:15px;width:auto;fill:#fafafa}
+.hd{display:flex;align-items:center;justify-content:center;margin:2px 0 0}
+.t{font-size:15px;font-weight:700;letter-spacing:-.01em;color:#fafafa}
+.mn{font-size:11.5px;color:#a1a1aa;margin:6px 0 11px;white-space:nowrap;overflow:hidden;text-overflow:ellipsis}
+.track{height:8px;border-radius:4px;background:#27272a;overflow:hidden}
+.fill{height:100%;width:0;border-radius:4px;background:#a1a1aa;transition:width .6s cubic-bezier(.3,.8,.3,1),background .3s}
+.r2{display:flex;justify-content:space-between;align-items:center;gap:10px;margin-top:9px}
+.pt{font-size:14px;font-weight:700;color:#fafafa;font-variant-numeric:tabular-nums}
+.chip{display:inline-block;padding:4px 10px;border-radius:999px;font-size:10px;font-weight:700;letter-spacing:.08em;text-transform:uppercase}
+.chip.up{background:rgba(74,222,128,.15);color:#4ade80}
+.chip.down{background:rgba(248,113,113,.15);color:#f87171}
+.chip.grey{background:rgba(161,161,170,.15);color:#a1a1aa}
+.chip.refresh{background:rgba(250,250,250,.12);color:#fafafa}
+.hint{display:block;font-size:10.5px;color:#a1a1aa;margin-top:10px}
+@media (prefers-reduced-motion:reduce){.card{animation:none}.fill{transition:none}}
+</style>
+<button class="card" id="b" aria-label="Uptime status — tap to refresh"><svg class="mark" id="m" viewBox="100.6 100.6 523.8 291.8" aria-hidden="1"></svg><span class="hd"><span class="t">Uptime Status</span></span><p class="mn" id="mn">Checking monitor…</p><div class="track"><div class="fill" id="fl"></div></div><div class="r2"><span class="pt" id="pt">—</span><span class="chip grey" id="ch">CHECKING</span></div><span class="hint" id="h">Auto-refreshes · tap for instant refresh</span></button>
+<script>
+var W=window.TelegramWidget||{request:function(){return Promise.resolve({result:null})}};
+var last=0;
+function setState(raw){
+var nm='Status unavailable — tap to retry',st='OFFLINE',chip='grey',pc=0,col='#a1a1aa';
+try{var d=JSON.parse(raw);
+if(d.e)nm='Status API not configured';
+else{nm=d.n||nm;var s=d.s||'';pc=Math.max(0,Math.min(100,parseFloat(d.p)||0));
+if(s==='2'){st='UP';chip='up';col='#4ade80'}
+else if(s==='8'||s==='9'){st='DOWN';chip='down';col='#f87171'}
+else if(s==='0'){st='PAUSED';col='#a1a1aa'}
+else{st='CHECKING';col='#a1a1aa'}}}catch(e){}
+document.getElementById('mn').textContent=nm;
+document.getElementById('fl').style.width=pc+'%';
+document.getElementById('fl').style.background=col;
+document.getElementById('pt').textContent=pc>0?pc.toFixed(2)+'%':'—';
+var ch=document.getElementById('ch');ch.className='chip '+chip;ch.textContent=st;
+document.getElementById('h').textContent='Auto-refreshes · tap for instant refresh'}
+function ask(){last=Date.now();
+var ch=document.getElementById('ch');ch.className='chip refresh';ch.textContent='REFRESHING';
+W.request('st').then(function(a){setState(a&&a.result!==null?String(a.result):null)}).catch(function(){setState(null)})}
+ask();
+setInterval(function(){if(Date.now()-last>30000)ask()},6000);
+document.getElementById('b').addEventListener('click',ask);
+var B='.XXX.XXX. X....X..X XXXX.X..X ...X.X..X XXX..XXX.'.split(' ');
+for(var r=0,cells=[],m=document.getElementById('m');r<5;r++)for(var col=0;col<9;col++)if(B[r][col]==='X'){var e=document.createElementNS('http://www.w3.org/2000/svg','rect');e.setAttribute('x',100.6+col*58);e.setAttribute('y',100.6+r*58);e.setAttribute('width',59.8);e.setAttribute('height',59.8);e.setAttribute('rx',10.5);cells.push(e)}
+var i=0,ph=0,wait=0;
+if(matchMedia('(prefers-reduced-motion: reduce)').matches){for(var k=0;k<cells.length;k++)m.appendChild(cells[k])}
+else var asm=setInterval(function(){if(ph===0){m.appendChild(cells[i++]);if(i>=cells.length){ph=1;wait=250}}else if(ph===1){if(--wait<=0){ph=2;i=0}}else if(ph===2){m.removeChild(cells[i++]);if(i>=cells.length){ph=3;wait=50}}else{if(--wait<=0){ph=0;i=0}}},16);
+</script>
