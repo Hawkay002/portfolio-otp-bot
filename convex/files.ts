@@ -77,3 +77,24 @@ export const registerUploaded = mutation({
     })
   },
 })
+
+// Admin: drop a stored blob plus its files row (cleanup for bad uploads).
+export const removeBlob = mutation({
+  args: {
+    secret: v.string(),
+    file: v.string(),
+    storageId: v.id("_storage"),
+  },
+  handler: async (ctx, args) => {
+    if (!authorized(args.secret)) throw new Error("Unauthorized")
+
+    const rows = await ctx.db
+      .query("files")
+      .withIndex("by_file", (q) => q.eq("file", args.file))
+      .collect()
+    for (const row of rows) {
+      if (row.storageId === args.storageId) await ctx.db.delete(row._id)
+    }
+    await ctx.storage.delete(args.storageId)
+  },
+})
